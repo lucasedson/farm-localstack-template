@@ -5,10 +5,10 @@
 This template creates a fast and simple Localstack environment for development.
 
 Dependencies:
- - [uv](https://github.com/astral-sh/uv)
+ - [uv](https://github.com/astral-sh/uv) 
  - [Docker (with Docker Compose)](https://www.docker.com/)
 
-Use:
+Usage:
 ```sh
 git clone "THIS REPOSITORY"
 cd farm-localstack-template
