@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SUB-STACK: Cria uma EC2. Recebe VPC, Sub-rede e KeyName como parâmetros.'
+
+Parameters:
+  VpcIdToUse:
+    Type: AWS::EC2::VPC::Id
+    Description: 'ID da VPC onde o Security Group será criado.'
+  SubnetIdToUse:
+    Type: AWS::EC2::Subnet::Id
+    Description: 'ID da Sub-rede onde a instância será lançada.'
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: 'Nome do Key Pair para acesso SSH.'
+
+Resources:
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Permite acesso HTTP e SSH'
+      # INJEÇÃO: Usa o ID da VPC recebido como parâmetro
+      VpcId: !Ref VpcIdToUse
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: 0.0.0.0/0 }
+        - { IpProtocol: tcp, FromPort: 22, ToPort: 22, CidrIp: 0.0.0.0/0 }
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: 'ami-0c55b159cbfafe1f0' # Amazon Linux 2 (us-east-1)
+      InstanceType: 't2.micro'
+      KeyName: !Ref KeyName
+      # INJEÇÃO: Usa o ID da Sub-rede recebido como parâmetro
+      SubnetId: !Ref SubnetIdToUse
+      SecurityGroupIds:
+        - !Ref WebServerSecurityGroup
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          echo "<h1>Instancia criada pela Master Stack!</h1>" > /var/www/html/index.html
+
+Outputs:
+  PublicIP:
+    Description: 'O IP Público da instância'
+    Value: !GetAtt EC2Instance.PublicIp

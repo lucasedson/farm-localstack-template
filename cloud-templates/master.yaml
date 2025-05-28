@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'STACK MASTER: Orquestra a criação da VPC e da EC2.'
+
+Parameters:
+  KeyName:
+    Description: 'Nome do seu Key Pair existente para acesso SSH.'
+    Type: AWS::EC2::KeyPair::KeyName
+
+Resources:
+  # 1. Define a sub-stack da VPC
+  VpcStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'https://s3.us-east-1.amazonaws.com/meu-bucket-de-templates/vpc-module.yaml' # Adapte
+      # Não precisamos passar parâmetros aqui, mas poderíamos se o vpc-module.yaml precisasse
+
+  # 2. Define a sub-stack da EC2
+  Ec2InstanceStack:
+    Type: AWS::CloudFormation::Stack
+    # Garante que a stack da VPC seja criada ANTES da stack da EC2
+    DependsOn: VpcStack
+    Properties:
+      TemplateURL: 'https://s3.us-east-1.amazonaws.com/meu-bucket-de-templates/ec2-module.yaml' # Adapte
+      # INJEÇÃO DE DADOS: Passa os valores para os parâmetros da sub-stack EC2
+      Parameters:
+        # Pega a saída 'VPCID' da VpcStack e a injeta no parâmetro 'VpcIdToUse'
+        VpcIdToUse: !GetAtt VpcStack.Outputs.VPCID
+        # Pega a saída 'PublicSubnetID' da VpcStack e a injeta no parâmetro 'SubnetIdToUse'
+        SubnetIdToUse: !GetAtt VpcStack.Outputs.PublicSubnetID
+        # Passa o parâmetro recebido pela própria master stack
+        KeyName: !Ref KeyName
+
+# Expõe a saída final mais importante para o usuário
+Outputs:
+  InstancePublicIp:
+    Description: 'O IP Público da instância EC2 criada'
+    Value: !GetAtt Ec2InstanceStack.Outputs.PublicIP
