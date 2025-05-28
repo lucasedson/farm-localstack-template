@@ -11,7 +11,7 @@ Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'https://s3.us-east-1.amazonaws.com/meu-bucket-de-templates/vpc-module.yaml' # Adapte
+      TemplateURL: 'https://raw.githubusercontent.com/lucasedson/farm-localstack-template/refs/heads/main/cloud-templates/vpc/vpc-module.yaml' # Adapte
       # Não precisamos passar parâmetros aqui, mas poderíamos se o vpc-module.yaml precisasse
 
   # 2. Define a sub-stack da EC2
@@ -20,7 +20,7 @@ Resources:
     # Garante que a stack da VPC seja criada ANTES da stack da EC2
     DependsOn: VpcStack
     Properties:
-      TemplateURL: 'https://s3.us-east-1.amazonaws.com/meu-bucket-de-templates/ec2-module.yaml' # Adapte
+      TemplateURL: 'https://raw.githubusercontent.com/lucasedson/farm-localstack-template/refs/heads/main/cloud-templates/ec2/ec2-module.yaml' # Adapte
       # INJEÇÃO DE DADOS: Passa os valores para os parâmetros da sub-stack EC2
       Parameters:
         # Pega a saída 'VPCID' da VpcStack e a injeta no parâmetro 'VpcIdToUse'
