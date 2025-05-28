@@ -11,8 +11,8 @@ Dependencies:
 Use:
 ```sh
 git clone "THIS REPOSITORY"
+cd farm-localstack-template
 docker compose up -d
-uv install
 uv run main.py
 ```
 
