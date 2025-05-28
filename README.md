@@ -10,9 +10,10 @@ Dependencies:
 
 Use:
 ```sh
-git clone "This repo"
+git clone "THIS REPOSITORY"
 docker compose up -d
 uv install
 uv run main.py
 ```
+
 
