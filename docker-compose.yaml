@@ -6,3 +6,12 @@ services:
       - "127.0.0.1:4566:4566"
     environment:
       - DEBUG=1
+      # - LAMBDA_EXECUTOR=docker
+    volumes:
+      # Monta o soquete do Docker. Essencial para a comunicação.
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      # Monta um volume nomeado para persistir dados. Mais seguro que montar um diretório do host.
+      - "localstack_data:/var/lib/localstack"
+
+volumes:
+  localstack_data:
