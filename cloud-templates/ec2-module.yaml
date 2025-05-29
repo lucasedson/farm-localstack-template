@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SUB-STACK: Cria uma EC2. Recebe VPC e Sub-rede como parâmetros, SEM KeyPair.'
+
+Parameters:
+  VpcIdToUse:
+    Type: AWS::EC2::VPC::Id
+    Description: 'ID da VPC onde o Security Group será criado.'
+  SubnetIdToUse:
+    Type: AWS::EC2::Subnet::Id
+    Description: 'ID da Sub-rede onde a instância será lançada.'
+  # O PARÂMETRO 'KeyName' FOI REMOVIDO DAQUI
+
+Resources:
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Permite acesso HTTP e SSH'
+      VpcId: !Ref VpcIdToUse
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: 0.0.0.0/0 }
+        - { IpProtocol: tcp, FromPort: 22, ToPort: 22, CidrIp: 0.0.0.0/0 }
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: 'ami-0c55b159cbfafe1f0' # Amazon Linux 2 (us-east-1)
+      InstanceType: 't2.micro'
+      # A PROPRIEDADE 'KeyName' FOI REMOVIDA DAQUI
+      SubnetId: !Ref SubnetIdToUse
+      SecurityGroupIds:
+        - !Ref WebServerSecurityGroup
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          echo "<h1>Instancia criada pela Master Stack (sem KeyPair)!</h1>" > /var/www/html/index.html
+
+Outputs:
+  PublicIP:
+    Description: 'O IP Público da instância'
+    Value: !GetAtt EC2Instance.PublicIp
